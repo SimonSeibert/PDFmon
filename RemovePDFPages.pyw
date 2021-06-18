@@ -1,31 +1,59 @@
-from PyPDF2 import PdfFileWriter, PdfFileReader
+from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 from tkinter import *
+from tkinter import ttk
 from tkinter import filedialog
+from functools import partial
 
 #-------------------------------------------
 #------------------GUI----------------------
 #-------------------------------------------
 
-# Function for opening the
-# file explorer window
-def browseFiles():
-    tmp_filename = filedialog.askopenfilename(initialdir = "/", title = "Select a PDF-File", filetypes = (("PDF files", "*.pdf*"), ("all files", "*.*")))
-    filename = tmp_filename
-    # Change label contents
-    label_file_explorer.configure(text=tmp_filename)
-    # Enable Button for cutting
-    button_keep_pages['state'] = "active"
-      
-def deletePages():
+# Function for opening the file explorer window and returning a path
+def browse():
+    path = filedialog.askopenfilename(initialdir = "/", title = "Select a PDF-File", filetypes = (("PDF files", "*.pdf*"), ("all files", "*.*")))
+    return path
+
+# Browsing a file and changing a label to the path
+def browse_and_change_label(label):
+    label.configure(text=browse())
+
+# Activates the Button at the delete secion
+def trp_browseFiles():
+    browse_and_change_label(trp_label_path)
+    trp_button_keep_pages['state'] = "active"  
+
+def get_output_name(path, append):
+    split_location = path.rsplit('/', 1)
+    output_file_location = split_location[0]
+    name = split_location[1].split(".")[0] + "-" + append
+    return output_file_location + "/" + name + ".pdf"
+
+def tmp_merge():
+    # Start merger
+    merger = PdfFileMerger()
+    # Get File locations
+    input_file_location_1 = tmp_label_path_1['text']
+    input_file_location_2 = tmp_label_path_2['text']
+    #Merge the files 
+    merger.append(input_file_location_1)       
+    merger.append(input_file_location_2)  
+
+    merger.write(get_output_name(input_file_location_1, "merge"))
+    merger.close()
+
+    tmp_label_feedback['foreground'] = "green"
+    tmp_label_feedback['text'] = "Edit was saved at " + final_output_name
+
+def delete_pages():
     print("todo")
 
-def keepPages():
+def keep_pages():
     # Gets pages as strings
-    pages_to_keep_as_string = text_area_keep_pages.get().split(",")
+    pages_to_keep_as_string = trp_keep_pages.get().split(",")
     # Converts strings to ints
     pages_to_keep = [int(numeric_string) for numeric_string in pages_to_keep_as_string]
     # Get File location
-    input_file_location = label_file_explorer['text']
+    input_file_location = trp_label_path['text']
     # Get Input File
     infile = PdfFileReader(input_file_location, 'rb')
     output = PdfFileWriter()
@@ -36,74 +64,86 @@ def keepPages():
             p = infile.getPage(i)
             output.addPage(p)
 
-        split_location = input_file_location.rsplit('/', 1)
-        output_file_location = split_location[0]
-        name = split_location[1].split(".")[0] + "-cut"
-        final_output_name = output_file_location + "/" + name + ".pdf"
+        #get output path/name
+        final_output_name = get_output_name(input_file_location, "cut")
         with open(final_output_name, 'wb') as f:
+            #Create new file
             output.write(f)
         
-        label_feedback['fg'] = "green"
-        label_feedback['text'] = "Edit was saved at " + final_output_name
+        #Success
+        trp_label_feedback['foreground'] = "green"
+        trp_label_feedback['text'] = "Edit was saved at " + final_output_name
     except IndexError:
-        label_feedback['fg'] = "red"
-        label_feedback['text'] = "Error: PDF doesn't have that many pages!"   
+        #Failure
+        trp_label_feedback['foreground'] = "red"
+        trp_label_feedback['text'] = "Error: PDF doesn't have that many pages!"   
 
-    
+
 
 # Create the root window
 window = Tk()
   
 # Set window title
 window.title('PDFmon')
-  
+
+# Add tabs
+tabControl = ttk.Notebook(window)
+tab1 = ttk.Frame(tabControl)
+tab2 = ttk.Frame(tabControl)
+
+tabControl.add(tab1, text ='Remove pages')
+tabControl.add(tab2, text ='Merge pages')
+tabControl.pack(expand = 1, fill ="both")
+
 # Set window size
-window.geometry("600x100")
+window.geometry("600x200")
   
 #Set window background color
 window.config(background = "white")
   
-# Create a File Explorer label
-label_file_explorer = Label(window, text = "", fg = "blue")
+# ELEMENTS FOR TAB 1
+trp_button_explore = ttk.Button(tab1, text="Browse", command = trp_browseFiles, width=10)
+trp_button_explore.grid(column = 1, row = 1)  
 
-button_explore = Button(window, text = "Browse Files", command = browseFiles, width=10)
-  
-button_exit = Button(window, text = "Exit", command = exit, width=10)
+trp_label_path = ttk.Label(tab1, text="", foreground="blue")
+trp_label_path.place(x=80, y=0)
 
-label_keep_pages = Label(window, text="Keep Pages:", width=10)
+trp_label_keep_pages = ttk.Label(tab1, text="Keep Pages:", width=10)
+trp_label_keep_pages.grid(column = 1, row = 2) 
 
-text_area_keep_pages = StringVar()
-input_keep_pages = Entry(window, textvariable = text_area_keep_pages, width=30)
+trp_keep_pages = StringVar()
+trp_input_keep_pages = ttk.Entry(tab1, text="", textvariable = trp_keep_pages, width=30)
+trp_input_keep_pages.grid(column = 2, row = 2)  
 
-button_keep_pages = Button(window, text = "Keep", command = keepPages, state = DISABLED, width=10)
+trp_button_keep_pages = ttk.Button(tab1, text = "Keep", command = keep_pages, state = DISABLED, width=10)
+trp_button_keep_pages.grid(column = 3, row = 2)  
 
-label_delete_pages = Label(window, text="Delete Pages:")
+trp_label_feedback = ttk.Label(tab1, text = "")
+trp_label_feedback.place(x=0, y=80)
 
-text_area_delete_pages = StringVar()
-input_delete_pages = Entry(window, textvariable = text_area_delete_pages, width=30)
+trp_button_exit = ttk.Button(tab1, text = "Exit", command = exit, width=10)
+trp_button_exit.grid(column = 1, row = 4)  
 
-button_delete_pages = Button(window, text = "Delete", command = deletePages)
+# ELEMENTS FOR TAB 2
+#tmp_button_explore = ttk.Button(tab2, text="Browse PDF 1", command = tmp_browseFiles_1, width=15)
 
-label_feedback = Label(window, text = "", fg = "green")
-  
-# Grid method is chosen for placing
-# the widgets at respective positions
-# in a table like structure by
-# specifying rows and columns
+tmp_label_path_1 = ttk.Label(tab2, text="", foreground="blue")
+tmp_label_path_1.place(x=120, y=0)
 
-button_explore.grid(column = 1, row = 1)
-label_file_explorer.place(x=80, y=0)
+tmp_button_explore = ttk.Button(tab2, text="Browse PDF 1", command=partial(browse_and_change_label, tmp_label_path_1), width=15)
+tmp_button_explore.grid(column = 1, row = 1) 
 
-label_keep_pages.grid(column = 1,row = 2)
-input_keep_pages.grid(column = 2,row = 2)
-button_keep_pages.grid(column = 3,row = 2)
+tmp_label_path_2 = ttk.Label(tab2, text="", foreground="blue")
+tmp_label_path_2.place(x=120, y=30)
 
-#label_delete_pages.grid(column = 1,row = 6)
-#input_delete_pages.grid(column = 1,row = 7)
-#button_delete_pages.grid(column = 1,row = 8)
+tmp_button_explore = ttk.Button(tab2, text="Browse PDF 2", command=partial(browse_and_change_label, tmp_label_path_2), width=15)
+tmp_button_explore.grid(column = 1, row = 2)  
 
-label_feedback.place(x=0, y=80)
-button_exit.grid(column = 1,row = 4)
+tmp_button_merge = ttk.Button(tab2, text="Merge", command = tmp_merge, width=15)
+tmp_button_merge.grid(column = 1, row = 3)  
+
+tmp_label_feedback = ttk.Label(tab2, text = "")
+tmp_label_feedback.place(x=0, y=80)
 
 # Let the window wait for any events
 window.mainloop()
