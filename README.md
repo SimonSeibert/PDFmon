@@ -1,6 +1,6 @@
 # PDFmon
 A small and simple PDF pages editor.
-So far you can only delete pages from a PDF file or merge 2 pdf files
+So far you can only delete pages from a PDF file or merge 2 pdf files.
 Maybe other features will come eventually.
 
 ![t1](https://user-images.githubusercontent.com/35760266/122593457-fe339600-d065-11eb-9b9a-033b0baecd0f.png)
