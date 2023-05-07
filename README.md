@@ -7,7 +7,8 @@ Maybe other features will come eventually.
 <img src="https://user-images.githubusercontent.com/35760266/236685302-7a7bc069-2e1f-4091-aa5a-383b1e8c17cb.png" alt="Merge Pages" width="600"/>
 
 
-You can clone the project, or get the .exe [here](https://github.com/SimonSeibert/PDFmon/releases/tag/1.1)
+You can clone the project, or download the newest [Version 1.2](https://github.com/SimonSeibert/PDFmon/releases/tag/1.2)
+If you prefer to have the application in a single concise .exe file, you can download [Version 1.1](https://github.com/SimonSeibert/PDFmon/releases/tag/1.1). The user interface is a little old-fashioned but functionally the same.
 
 I developed it as most PDF editors on Windows are overpriced and/or bloated. In most cases, I only need to remove or merge several pages.
 
