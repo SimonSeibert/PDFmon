@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from functools import partial
 from enum import Enum
+import customtkinter
 
 #-------------------------------------------
 #------------------LOGIC----------------------
@@ -22,6 +23,9 @@ def browse_files(multiple_files = False):
     global current_selected_files
     if multiple_files:
         current_selected_files = list(filedialog.askopenfilenames(initialdir = "/", title = "Select a PDF-File", filetypes = (("PDF files", "*.pdf*"), ("all files", "*.*"))))
+        #Delete all entries in tmp_selected_files_list
+        tmp_selected_files_list.delete(0, END)
+        #Add new entries to tmp_selected_files_list
         for file in current_selected_files :
             tmp_selected_files_list.insert(END, file)
     else:
@@ -33,9 +37,9 @@ def browse_files(multiple_files = False):
 #
 def trp_browseFiles(trp_label_path):
     browse_files()
-    trp_button_keep_pages['state'] = "active"
-    trp_button_delete_pages['state'] = "active"
-    trp_label_path['text'] = current_selected_files[0]
+    trp_button_keep_pages.configure(state = "normal")
+    trp_button_delete_pages.configure(state = "normal")
+    trp_label_path.configure(text = "Selected: '" + current_selected_files[0] + "'")
 
 #
 # Generates the output name for the edited file ("filename_append.pdf")
@@ -61,8 +65,8 @@ def tmp_merge():
     merger.write(final_output_name)
     merger.close()
 
-    tmp_label_feedback['foreground'] = "green"
-    tmp_label_feedback['text'] = "Merge was saved at " + final_output_name
+    tmp_label_feedback.configure(text_color = "green")
+    tmp_label_feedback.configure(text = "Merge was saved at " + final_output_name)
 
 #
 # Converts a string to an array of ints
@@ -81,7 +85,8 @@ def execute_page_modification(page_modification):
     for i in range(len(pages_to_keep)):
         pages_to_keep[i] -= 1
     # Get File location
-    input_file_location = trp_label_path['text']
+    global current_selected_files
+    input_file_location = current_selected_files[0]
     # Get Input File
     infile = PdfFileReader(input_file_location, 'rb')
     output = PdfFileWriter()
@@ -109,16 +114,16 @@ def execute_page_modification(page_modification):
                 output.write(f)
 
         #Success
-        trp_label_feedback['foreground'] = "green"
-        trp_label_feedback['text'] = "Edit was saved at " + final_output_name
+        trp_label_feedback.configure(text_color = "green")
+        trp_label_feedback.configure(text = "Edit was saved at " + final_output_name)
     except IndexError:
         #Failure
-        trp_label_feedback['foreground'] = "red"
-        trp_label_feedback['text'] = "Error: PDF doesn't have that many pages!"
+        trp_label_feedback.configure(text_color = "red")
+        trp_label_feedback.configure(text = "Error: PDF doesn't have that many pages!")
     except:
         #Failure
-        trp_label_feedback['foreground'] = "red"
-        trp_label_feedback['text'] = "Unknown Error"
+        trp_label_feedback.configure(text_color = "red")
+        trp_label_feedback.configure(text = "Unknown Error!")
 
 #
 # Move the selected item up or down in the listbox
@@ -145,72 +150,110 @@ def move_item(listbox, direction):
 #-------------------------------------------
 button_width = 15
 
+#Theme
+customtkinter.set_appearance_mode("Dark")
+customtkinter.set_default_color_theme("blue")
+
 # Create the root window
-window = Tk()
+window = customtkinter.CTk()
   
 # Set window title
 window.title('PDFmon by Simon Seibert')
 
 # Add tabs
-tabControl = ttk.Notebook(window)
-tab1 = ttk.Frame(tabControl)
-tab2 = ttk.Frame(tabControl)
-
-tabControl.add(tab1, text ='Remove pages')
-tabControl.add(tab2, text ='Merge pages')
+tabControl = customtkinter.CTkTabview(master=window)
 tabControl.pack(expand = 1, fill ="both")
+
+tabControl.add('Remove Pages')
+tabControl.add('Merge Files')
+
+tab1 = customtkinter.CTkFrame(master=tabControl.tab("Remove Pages"))
+tab1.pack(ipadx=200, ipady=10)
+tab2 = customtkinter.CTkFrame(master=tabControl.tab("Merge Files"))
+tab2.pack(ipadx=200, ipady=10)
 
 # Set window size
 window.geometry("600x400")
   
-#Set window background color
-window.config(background = "white")
-  
-# ELEMENTS FOR TAB 1
-trp_label_path = ttk.Label(tab1, text="...", foreground="blue")
-trp_button_explore = ttk.Button(tab1, text="Browse PDF", command=partial(trp_browseFiles, trp_label_path), width=button_width)
+#############################
+##### ELEMENTS FOR TAB 1 ####
+#############################
 
-trp_button_explore.grid(column = 1, row = 1)  
-trp_label_path.place(x=110, y=5)
-
-# Here the input is saved
+# Here the remove input is saved
 trp_pages = StringVar()
 
-trp_label_remove_pages = ttk.Label(tab1, text="Remove Pages:", width=button_width)
-trp_label_remove_pages.grid(column = 1, row = 2) 
+#
+# Create all UI elements
+#
 
-trp_input_pages = ttk.Entry(tab1, text="", textvariable = trp_pages, width=30)
-trp_input_pages.grid(column = 2, row = 2)  
+#Frames 
+trp_frame_remove = customtkinter.CTkFrame(master=tab1)
+trp_frame_remove_buttons = customtkinter.CTkFrame(master=tab1)
+#tab 1 content
+trp_tutorial = customtkinter.CTkLabel(tab1, wraplength=550, text='Here you can remove individual pages from a .pdf file. "Delete" removes the pages you have entered. "Keep" keeps the pages you have entered and removes all others. if you want to delete/keep several pages, you must separate the page numbers with a comma (e.g. 1,3,12).')
+trp_label_path = customtkinter.CTkLabel(tab1, text="")
+trp_button_browse = customtkinter.CTkButton(tab1, text="Browse PDF", command=partial(trp_browseFiles, trp_label_path), width=button_width)
+trp_label_feedback = customtkinter.CTkLabel(tab1, text = "", width = 100)
+# trp_remove_frame content
+trp_label_remove_pages = customtkinter.CTkLabel(trp_frame_remove, text="Remove Pages:", width=button_width)
+trp_input_pages = customtkinter.CTkEntry(trp_frame_remove, textvariable = trp_pages, width=100)
+# trp_remove_buttons_frame content
+trp_button_keep_pages = customtkinter.CTkButton(trp_frame_remove_buttons, text = "Keep Selected Pages", state = DISABLED, command=partial(execute_page_modification, PageModification.KEEP), width=button_width/2)
+trp_button_delete_pages = customtkinter.CTkButton(trp_frame_remove_buttons, text = "Delete Selected Pages", state = DISABLED, command=partial(execute_page_modification, PageModification.DELETE), width=button_width/2)
 
-trp_button_keep_pages = ttk.Button(tab1, text = "Keep Selected Pages", command=partial(execute_page_modification, PageModification.KEEP), state = DISABLED, width=button_width/2)
-trp_button_keep_pages.grid(column = 3, row = 2)  
+#
+# Pack all UI elements
+#
+trp_tutorial.pack()
+trp_button_browse.pack(pady=5)
+trp_label_path.pack()
+trp_frame_remove.pack()
+trp_label_remove_pages.pack(side="left")
+trp_input_pages.pack(side="right", padx=5)
+trp_frame_remove_buttons.pack(pady=5)
+trp_button_keep_pages.pack(side="left")
+trp_button_delete_pages.pack(side="right", padx=5)
+trp_label_feedback.pack()
 
-trp_button_delete_pages = ttk.Button(tab1, text = "Delete Selected Pages", command=partial(execute_page_modification, PageModification.DELETE), state = DISABLED, width=button_width/2)
-trp_button_delete_pages.grid(column = 4, row = 2)  
+#############################
+##### ELEMENTS FOR TAB 2 ####
+#############################
 
-trp_label_feedback = ttk.Label(tab1, text = "")
-trp_label_feedback.place(x=0, y=50)
 
-# ELEMENTS FOR TAB 2
-tmp_button_explore = ttk.Button(tab2, text="Add PDF File(s)", command=partial(browse_files, True), width=button_width)
-tmp_button_explore.grid(column=1, row=0, padx=5, pady=5)
+#
+# Create all UI elements
+#
 
-tmp_button_merge = ttk.Button(tab2, text="Merge", command = tmp_merge, width=button_width)
-tmp_button_merge.grid(column=2, row=0, padx=5, pady=5)  
+#Frames
+tmp_button_frame = customtkinter.CTkFrame(master=tab2) # Create a frame for the buttons to place them horizontally
+tmp_file_controll = customtkinter.CTkFrame(master=tab2)
+tmp_file_controll_buttons = customtkinter.CTkFrame(master=tmp_file_controll) # Create a frame for the controll buttons
+#tab 2 content
+tmp_tutorial = customtkinter.CTkLabel(tab2, wraplength=550, text='Here you can select multiple .pdf file and merge them. Use the arrow buttons to change the merge order.')
+tmp_selected_files_scrollbar = ttk.Scrollbar(tab2, orient=HORIZONTAL) # Create a horizontal scrollbar for the Listbox
+tmp_label_feedback = customtkinter.CTkLabel(tab2, text = "", wraplength=400)
+# tmp_button_frame content
+tmp_button_explore = customtkinter.CTkButton(tmp_button_frame, text="Add PDF Files", command=partial(browse_files, True), width=button_width)
+tmp_button_merge = customtkinter.CTkButton(tmp_button_frame, text="Merge", command = tmp_merge, width=button_width)
+# tmp_file_controll_buttons content
+tmp_selected_files_list = Listbox(tmp_file_controll, selectmode=SINGLE, exportselection=0) # Create a listbox widget to hold the filenames
+tmp_up_button = customtkinter.CTkButton(tmp_file_controll_buttons, text="▲", command=lambda: move_item(tmp_selected_files_list, -1), width=5) # Create up and down buttons to reorder the items in the listbox
+tmp_down_button = customtkinter.CTkButton(tmp_file_controll_buttons, text="▼", command=lambda: move_item(tmp_selected_files_list, 1), width=5)
 
-# Create a listbox widget to hold the filenames
-tmp_selected_files_list = Listbox(tab2, selectmode=SINGLE, exportselection=0)
-tmp_selected_files_list.grid(column=0, row=1, rowspan=5, columnspan=3, padx=5, pady=5, sticky=N+S+E+W)
+tmp_tutorial.pack(pady=5)
+tmp_button_frame.pack(pady=5)
+tmp_button_explore.pack(side=LEFT, padx=5, fill=BOTH)
+tmp_button_merge.pack(side=RIGHT, padx=5, fill=BOTH)
+tmp_file_controll.pack(fill=BOTH, expand=True)
+tmp_selected_files_list.pack(fill=BOTH, expand=True, pady=10, side="left")
+tmp_selected_files_scrollbar.pack(fill=X, pady=0)
+# Set the scrollbar to control the Listbox horizontally
+tmp_selected_files_scrollbar.config(command=tmp_selected_files_list.xview)
+tmp_file_controll_buttons.pack(fill=BOTH, expand=True, anchor="center")
+tmp_up_button.pack(pady=25, padx=5)
+tmp_down_button.pack()
+tmp_label_feedback.pack()
 
-# Create up and down buttons to reorder the items
-tmp_up_button = ttk.Button(tab2, text="▲", command=lambda: move_item(tmp_selected_files_list, -1))
-tmp_up_button.grid(column=3, row=1, padx=5, pady=5, sticky=N)
-
-tmp_down_button = ttk.Button(tab2, text="▼", command=lambda: move_item(tmp_selected_files_list, 1))
-tmp_down_button.grid(column=3, row=2, padx=5, pady=5, sticky=S)
-
-tmp_label_feedback = ttk.Label(tab2, text = "")
-tmp_label_feedback.place(x=0, y=220)
 
 # Let the window wait for any events
 window.mainloop()
