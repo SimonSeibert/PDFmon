@@ -4,11 +4,13 @@ So far you can delete pages from a .pdf file or merge an arbitrary number of .pd
 Maybe other features will come eventually.
 
 In the first tab you can delete pages from a single .pdf file:
-<img src="https://user-images.githubusercontent.com/35760266/236685300-6cd24298-f4da-4fab-b5f5-a73f440666dc.png" alt="Delete Pages" width="600"/>
+
+<img src="https://github.com/SimonSeibert/PDFmon/assets/35760266/2ac026c8-fdb4-4b10-a597-d34e1080d5a3" alt="Delete Pages" width="600"/>
+
 
 In the second tab you can merge an arbitrary number of .pdf files and arrange their order to your will:
-<img src="https://user-images.githubusercontent.com/35760266/236685302-7a7bc069-2e1f-4091-aa5a-383b1e8c17cb.png" alt="Merge Pages" width="600"/>
 
+<img src="https://github.com/SimonSeibert/PDFmon/assets/35760266/bfd11340-a17a-4640-bf50-26164fee1042" alt="Merge Pages" width="600"/>
 
 You can clone the project, or download the newest [Version 1.2](https://github.com/SimonSeibert/PDFmon/releases/tag/1.2)
 If you prefer to have the application in a single concise .exe file, you can download [Version 1.1](https://github.com/SimonSeibert/PDFmon/releases/tag/1.1). The user interface is a little old-fashioned but functionally the same.
