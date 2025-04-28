@@ -158,7 +158,7 @@ customtkinter.set_default_color_theme("blue")
 window = customtkinter.CTk()
   
 # Set window title
-window.title('PDFmon by Simon Seibert')
+window.title('PDFmon')
 
 # Add tabs
 tabControl = customtkinter.CTkTabview(master=window)
